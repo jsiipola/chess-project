@@ -19,6 +19,9 @@ import torch
 
 
 board = chess.Board()
+board2 = board.copy()
+print(board)
+print(board2)
 chess.svg.board(board, size=350)
 
 gg_ = chGif.feature_representation(3)
@@ -36,8 +39,12 @@ while True:
         break
     
     board = gg_.play_turn(board)
+    # board2 = copy(board)
+    # sys.exit()
     print(board.turn) # side to move
     print(bool(board.castling_rights & chess.BB_A1))
+    # print(board)
+    # sys.exit()
     print(bool(board.castling_rights & chess.BB_H1))
     print(board.has_kingside_castling_rights(chess.WHITE))
     print(chess.BB_H1)
@@ -50,20 +57,25 @@ while True:
     hash_map = gg_.from_fen_to_piece_positions(board.board_fen())
     
     print(hash_map)
+    """ feature_representation return the situation of the board as a vector. """
     vec = gg_.feature_representation(board)
     print(vec.shape)
-    vec = torch.from_numpy(vec)
-    vec = torch.reshape(vec, (1,75))
-    vec = vec.to(torch.float)
+    print()
+    # vec = torch.from_numpy(vec)
+    # vec = torch.reshape(vec, (1,75))
+    # vec = vec.to(torch.float)
     print(vec.shape)
 #    sys.exit()
     pos_value = eval_.evaluate(vec)
     print(vec)
     print(pos_value)
     print('ok')
+    
+    print(board)
+    print(board2)
+    
     sys.exit()
 
-print(board)
 
 display_board(board)
 

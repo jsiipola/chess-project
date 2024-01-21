@@ -20,6 +20,7 @@ import chess.svg
 import numpy as np
 import random
 import sys
+import torch
 
 """
 Aim of this script is to write something that handles the feature representation
@@ -81,11 +82,23 @@ class feature_representation(object):
                     hash_map[str_] = []
                     hash_map[str_].append(pos)
         return hash_map
-        
+    
+    def getChildPositions(self, board):
+        moveChildrenBoards = []
+        for move in board.legal_moves:
+            board.push(move)
+            moveChildrenBoards.append(board.copy())
+            board.pop()
+        return moveChildrenBoards
+            
+            
+    
     def play_turn(self, board):
         move_list = []
         for move in board.legal_moves:
             move_list.append(move)
+            # print(move)
+            # sys.exit()
     #    move_list = random.shuffle(move_list)
         k = board.legal_moves.count()
         x = np.random.rand()
@@ -286,14 +299,16 @@ class feature_representation(object):
         features[72] = self.piece_position('p', position_dict, 7)
         # Black pawn 8 Exists
         features[73] = self.piece_exists('p', position_dict, 8)
-        # Black pawn 8 Position
+        # Black pawn 8 Position 
         features[74] = self.piece_position('p', position_dict, 8)
         
+        vec = torch.from_numpy(features)
+        vec = torch.reshape(vec, (1,75))
+        vec = vec.to(torch.float)
         
         
         
-        
-        return features
+        return vec
         #    features[4] # balck queens
         #    features[4] # black rooks
         #    features[4] # black bishops
