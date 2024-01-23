@@ -302,11 +302,21 @@ class feature_representation(object):
         # Black pawn 8 Position 
         features[74] = self.piece_position('p', position_dict, 8)
         
+        """ Next we set all NAN values to zero. Reason: if feature tensor has
+        even one NAN value then the output of a neural network, as we use feature
+        tensor as the input layer, is NAN tensor. It is not yet well understood,
+        but we may assume that zero serves the purpose of NAN in the input layer.
+        When a coordinate of the input layer is put to zero, it means that we are
+        restricting the input space to a lower dimensional subspace. That should
+        be alright. 
+        
+        So the next line is for setting NANs to zeros. """
+        features[features != features] = 0
+        
+        """ Some reshaping, and converting to correct number type. """
         vec = torch.from_numpy(features)
         vec = torch.reshape(vec, (1,75))
         vec = vec.to(torch.float)
-        
-        
         
         return vec
         #    features[4] # balck queens

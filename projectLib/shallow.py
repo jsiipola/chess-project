@@ -118,6 +118,8 @@ class shallow(object):
                     self.activation = nn.Tanh()
                 elif activation == 'Softplus':
                     self.activation = nn.Softplus()
+                elif activation == 'gelu':
+                    self.activation = nn.GELU()
                     
             def forward(self, x):
                 """
@@ -126,9 +128,26 @@ class shallow(object):
                 args:
                     x: The input vector of the neural net.
                 """
-                print('hiphip')
                 x = self.activation(self.layers[0](x))  
                 x = self.layers[1](x)
+                return x
+            
+            def forwardPublic(self, x):
+                """
+                At the moment this forward method assumes only relu as activation
+                function.
+                args:
+                    x: The input vector of the neural net.
+                    
+                For debugging. Print out some data while pushing forward in the 
+                network.
+                """
+                x = self.activation(self.layers[0](x))  
+                print('hidden: ')
+                print(x)
+                x = self.layers[1](x)
+                print('output')
+                print(x)
                 return x
             
             

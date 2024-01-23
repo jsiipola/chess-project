@@ -15,7 +15,18 @@ import numpy as np
 import random
 import sys
 import torch
+import time
 
+""" setting device on GPU if available, else CPU """
+dev = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# dev = torch.device('cpu')
+if (torch.cuda.is_available()):
+    torch.cuda.empty_cache()
+    # sys.exit()
+# dev = 'cpu'
+print('Using device:', dev)
+print()
+device = torch.device(dev)
 
 
 board = chess.Board()
@@ -29,16 +40,25 @@ gg_ = chGif.feature_representation(3)
 hidden_layer_width = 50
 """ Shallow is a neural network, shallow is a synonym for two layer, or one 
     hidden layer neural network. """
-shallow = chGif.shallow(hidden_layer_width, 'relu', gg_.n_features)
+shallow = chGif.shallow(hidden_layer_width, 'tanh', gg_.n_features)
 shallow.build()
 eval_ = chGif.evaluator(shallow.neural_net)
 
-
+treeResearcher = chGif.depth_searcher(evaluationFunction = eval_, featureRep = gg_, device = device, neural_net = shallow.neural_net)
+# pos_value = treeResearcher.minimax(position = board, depth = 3, maximizingPlayer = True)
+t0 = time.time()
+pos_value = treeResearcher.minimax_alphaBetaPruning(position = board, depth = 5,
+                                                    maximizingPlayer = True)
+t1 = time.time()
+print(pos_value)
+print(t1-t0)
+sys.exit()
 while True:
     if not gg_.test_if_legal_moves(board):
         break
     
     board = gg_.play_turn(board)
+    
     # board2 = copy(board)
     # sys.exit()
     print(board.turn) # side to move

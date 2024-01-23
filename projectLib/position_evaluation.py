@@ -14,7 +14,6 @@ class evaluator(object):
 
 
     def evaluate(self, board_features):
-        print('hip')
         return self.net.forward(board_features)
         
 
