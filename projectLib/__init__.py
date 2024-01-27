@@ -10,14 +10,16 @@ from __future__ import absolute_import
 from .feature_representation import feature_representation
 from .shallow import shallow
 from .position_evaluation import evaluator
-from .depth_search import depth_searcher
+from .depth_search import DepthSearcher
+from .matchstate import matchState
 
 
 __all__ = [
     "feature_representation",
     "shallow",
     "evaluator",
-    "depth_searcher",
+    "DepthSearcher",
+    "matchState",
 ]
 
 

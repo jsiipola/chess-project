@@ -5,21 +5,24 @@ Created on Thu Mar 16 11:13:44 2023
 
 @author: siipola
 """
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+
 import torch
 import sys
 
 
-class depth_searcher(object):
+class DepthSearcher(object):
     """ Aim of this class is to provide tool that is able to search positions
         in the depth of the game. """
-    def __init__(self, evaluationFunction, featureRep, device, neural_net):
+    def __init__(self, evaluationFunction, featureRep, device):
         """ Position wherefrom the search begins. 
             And for which the decision of a move is made. """
         # self.board_root_position = board_root_position
         self.evaluationFunction = evaluationFunction
         self.featureRepresentation = featureRep
         self.device = device
-        self.neural_net = neural_net
 
     def update_root_position(self, board):
         """ With this method we update the root position into a new position. """
@@ -39,11 +42,12 @@ class depth_searcher(object):
                             https://www.youtube.com/watch?v=l-hh51ncgDI
                         """
         """ First check if the depth is zero or if the game has ended. If so,
-            return the evaluation at the current position. """
+            return the evaluation at the current position. Also return
+            the next state"""
         checkmate = self.featureRepresentation.detect_check_mate(position)
         if depth == 0 or checkmate is True:
             position_features = self.featureRepresentation.feature_representation(position)
-            return self.evaluationFunction.evaluate(position_features)
+            return self.evaluationFunction.evaluate(position_features), None, None
         """ If the player choosing the move is maximizing player, then go here. """
         if maximizingPlayer:
             """ maxEval is going to be the output of this level of nodes, and 
@@ -52,18 +56,34 @@ class depth_searcher(object):
             """ As the depth was not zero, then this node has child nodes, we
                 list the child node positions and do the evaluation of the position
                 for each of those. """
-            listOfMoveChildren = self.featureRepresentation.getChildPositions(position)
+            listOfMoveChildren, moves = self.featureRepresentation.getChildPositions(position)
+            t = -1
             for positionChild in listOfMoveChildren:
-                evaluation = self.minimax(positionChild, depth-1, False)
+                t += 1
+                evaluation, comingUpNextState, tmp_move = self.minimax(positionChild, depth-1, False)
+                if maxEval < evaluation:
+                    newBestState = positionChild
+                    bestMove = moves[t]
                 maxEval = torch.maximum(maxEval, evaluation)
-            return maxEval
+            # print('maximizingPlayer')
+            # print(newBestState)
+            # print(maxEval)
+            return maxEval, newBestState, bestMove
         else:
             minEval = torch.tensor(float('inf'))
-            listOfMoveChildren = self.featureRepresentation.getChildPositions(position)
+            listOfMoveChildren, moves = self.featureRepresentation.getChildPositions(position)
+            t = -1
             for positionChild in listOfMoveChildren:
-                evaluation = self.minimax(positionChild, depth-1, True)
+                t += 1
+                evaluation, comingUpNextState, tmp_move = self.minimax(positionChild, depth-1, True)
+                if minEval > evaluation:
+                    newBestState = positionChild
+                    bestMove = moves[t]
                 minEval = torch.minimum(minEval, evaluation)
-            return minEval
+            # print('minimizingPlayer')
+            # print(newBestState)
+            # print(minEval)
+            return minEval, newBestState, bestMove
         
     def minimax_alphaBetaPruning(self, position, depth, maximizingPlayer, 
                                  alpha = -torch.tensor(float("inf")), 
@@ -89,23 +109,6 @@ class depth_searcher(object):
         if depth == 0 or checkmate is True:
             position_features = self.featureRepresentation.feature_representation(position)
             output = self.evaluationFunction.evaluate(position_features)
-            # print('evaluation')
-            # print(evaluation)
-            # print(evaluation.item())
-            # if torch.isnan(output).item():
-                # print('position')
-                # print(position)
-                # print('previousDebugChild')
-                # print(previousDebugChild)
-                # position_feature = self.featureRepresentation.feature_representation(positionChild)
-                # print('position_feature')
-                # print(position_features)
-                # position_featureDebugChild = self.featureRepresentation.feature_representation(previousDebugChild)
-                # print('position_featureDebugChild')
-                # print(position_featureDebugChild)
-                # self.neural_net.forwardPublic(position_features)
-                # self.neural_net.forwardPublic(position_featureDebugChild)
-                # sys.exit()
             return output
         
         """ If the player choosing the move is maximizing player, then go here. """
@@ -136,27 +139,7 @@ class depth_searcher(object):
             for positionChild in listOfMoveChildren:
                 evaluation = self.minimax_alphaBetaPruning(positionChild, depth-1, 
                                                            True, alpha, beta)
-                # print('evaluation')
-                # print(evaluation)
-                # print(evaluation.item())
-                # print(torch.isnan(evaluation).item())
-                # previousDebugChild = positionChild
-                # if torch.isnan(evaluation).item():
-                    # print('positionChild')
-                #     print(positionChild)
-                #     print('previousDebugChild')
-                #     print(previousDebugChild)
-                #     position_feature = self.featureRepresentation.feature_representation(positionChild)
-                #     print('position_feature')
-                #     print(position_feature)
-                #     position_featureDebugChild = self.featureRepresentation.feature_representation(previousDebugChild)
-                #     print('position_featureDebugChild')
-                #     print(position_featureDebugChild)
-                #     self.neural_net.forwardPublic(position_feature)
-                #     self.neural_net.forwardPublic(position_featureDebugChild)
-                #     sys.exit()
-                # print('depth')
-                # print(depth)
+
                 minEval = torch.minimum(minEval, evaluation)
                 beta = torch.minimum(beta, evaluation)
                 previousDebugChild = positionChild

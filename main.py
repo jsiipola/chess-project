@@ -44,14 +44,23 @@ shallow = chGif.shallow(hidden_layer_width, 'tanh', gg_.n_features)
 shallow.build()
 eval_ = chGif.evaluator(shallow.neural_net)
 
-treeResearcher = chGif.depth_searcher(evaluationFunction = eval_, featureRep = gg_, device = device, neural_net = shallow.neural_net)
-# pos_value = treeResearcher.minimax(position = board, depth = 3, maximizingPlayer = True)
-t0 = time.time()
-pos_value = treeResearcher.minimax_alphaBetaPruning(position = board, depth = 5,
-                                                    maximizingPlayer = True)
-t1 = time.time()
-print(pos_value)
-print(t1-t0)
+""" Initialize the matchstate which controls the game. """
+gameMaster = chGif.matchState('AI', 'AI', eval_, gg_, 2, device)
+""" Start playing the chess game. """
+gameMaster.play()
+sys.exit()
+treeResearcher = chGif.DepthSearcher(evaluationFunction = eval_, featureRep = gg_, device = device)
+pos_value, state, move = treeResearcher.minimax(position = board, depth = 2, maximizingPlayer = True)
+print(move)
+# t0 = time.time()
+# pos_value = treeResearcher.minimax_alphaBetaPruning(position = board, depth = 5,
+                                                    # maximizingPlayer = True)
+# t1 = time.time()
+# print(pos_value)
+# print(t1-t0)
+
+
+
 sys.exit()
 while True:
     if not gg_.test_if_legal_moves(board):
@@ -98,7 +107,6 @@ while True:
 
 
 display_board(board)
-
 
 
 

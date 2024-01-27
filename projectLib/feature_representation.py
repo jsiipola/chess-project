@@ -30,7 +30,6 @@ of the chess board and game situation.
 
 class feature_representation(object):
     def __init__(self,id_):
-        self.id = id_
         self.n_features = 75
         
 #class featureRepresentation(object):
@@ -40,7 +39,7 @@ class feature_representation(object):
         
     def display_board(self, board):
         display(board)
-        time.sleep(1)
+        # time.sleep(1)
             
     def piece_position(self, key, position_dict, num):
         if self.piece_exists(key, position_dict, num):
@@ -85,11 +84,13 @@ class feature_representation(object):
     
     def getChildPositions(self, board):
         moveChildrenBoards = []
+        moves = []
         for move in board.legal_moves:
             board.push(move)
             moveChildrenBoards.append(board.copy())
+            moves.append(move)
             board.pop()
-        return moveChildrenBoards
+        return moveChildrenBoards, moves
             
             
     
